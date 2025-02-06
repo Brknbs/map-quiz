@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 
 export function Header() {
   return (
-    <header className="w-full px-6 py-4 flex justify-between items-center bg-background/80 backdrop-blur-sm fixed top-0">
+    <header className="w-full px-6 py-4 flex justify-between items-center bg-background/80 backdrop-blur-sm fixed top-0 z-50">
       <div className="flex items-center gap-2">
         <MapIcon className="h-8 w-8 text-brown" />
         <span className="text-2xl font-bold text-dark-brown">GeoQuiz</span>
