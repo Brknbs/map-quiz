@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 interface ContinentCardProps {
   name: string;
-  image: string;
+  path: string;
 }
 
 const continentImages = {
@@ -17,7 +17,7 @@ const continentImages = {
   Oceania: "https://images.unsplash.com/photo-1589330273594-fade1ee91647",
 };
 
-export function ContinentCard({ name }: ContinentCardProps) {
+export function ContinentCard({ name, path }: ContinentCardProps) {
   const navigate = useNavigate();
 
   return (
@@ -36,7 +36,7 @@ export function ContinentCard({ name }: ContinentCardProps) {
         <h3 className="mb-4 text-2xl font-bold text-dark-brown">{name}</h3>
         <Button
           className="bg-brown hover:bg-brown/90 text-white transform transition-all duration-300 hover:scale-105"
-          onClick={() => navigate(`/play/${name.toLowerCase()}`)}
+          onClick={() => navigate(`/play/${path}`)}
         >
           Play
         </Button>

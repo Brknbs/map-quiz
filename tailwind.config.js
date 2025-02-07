@@ -56,6 +56,8 @@ export default {
           4: "hsl(var(--chart-4))",
           5: "hsl(var(--chart-5))",
         },
+        "map-base": "#E4E0E1",
+        "map-hover": "#c0c0c0",
       },
       borderRadius: {
         lg: "var(--radius)",
