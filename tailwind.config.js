@@ -69,6 +69,16 @@ export default {
       },
       animation: {
         "spin-slow": "spin 10s linear infinite",
+        hint: "hint 1.5s ease-in-out infinite",
+      },
+      keyframes: {
+        hint: {
+          "0%, 100%": { fill: "#EAEAEA" },
+          "50%": { fill: "#4ade80" },
+        },
+      },
+      backgroundImage: {
+        "map-pattern": "url('/patterns/cartography.svg')",
       },
     },
   },
