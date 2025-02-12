@@ -142,8 +142,8 @@ button:focus-visible {
 
 .bg-map-pattern {
   background-color: #d6c0b3;
-  background-image: radial-gradient(#493628 0.5px, transparent 0.5px),
-    radial-gradient(#493628 0.5px, #d6c0b3 0.5px);
+  background-image: radial-gradient(#493628 1px, transparent 1px),
+    radial-gradient(#493628 1px, #d6c0b3 1px);
   background-size: 20px 20px;
   background-position: 0 0, 10px 10px;
   /* opacity: 0.1; */

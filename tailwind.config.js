@@ -56,8 +56,8 @@ export default {
           4: "hsl(var(--chart-4))",
           5: "hsl(var(--chart-5))",
         },
-        "map-base": "#E4E0E1",
-        "map-hover": "#c0c0c0",
+        "map-base": "#EAEAEA",
+        "map-hover": "#DADADA",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -70,11 +70,17 @@ export default {
       animation: {
         "spin-slow": "spin 10s linear infinite",
         hint: "hint 1.5s ease-in-out infinite",
+        circle: "circle 2s ease-in-out infinite",
       },
       keyframes: {
         hint: {
           "0%, 100%": { fill: "#EAEAEA" },
           "50%": { fill: "#4ade80" },
+        },
+        circle: {
+          "0%": { transform: "scale(1)", opacity: "0.8" },
+          "50%": { transform: "scale(1.3)", opacity: "0.4" },
+          "100%": { transform: "scale(1)", opacity: "0.8" },
         },
       },
       backgroundImage: {

@@ -14,13 +14,42 @@ export function Game() {
   const [incorrectGuess, setIncorrectGuess] = useState<string | null>(null);
   const [incorrectAttempts, setIncorrectAttempts] = useState(0);
   const [showHint, setShowHint] = useState(false);
-  const [arrowPosition, setArrowPosition] = useState<{
+  const [hintPosition, setHintPosition] = useState<{
     x: number;
     y: number;
+    width: number;
+    height: number;
   } | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
-  const updateArrowPosition = () => {
+  const SMALL_COUNTRIES = ["VA", "SM", "AD", "LI", "MC", "MT"]; // Vatican City, San Marino, Andorra
+  const SMALL_COUNTRY_RADIUS = 5; // Increased radius for better visibility
+
+  const getPathCenter = (pathData: string) => {
+    // Get all numbers from the path data
+    const numbers = pathData.match(/-?\d+\.?\d*/g)?.map(Number) || [];
+    if (numbers.length < 2) return null;
+
+    // Calculate the average of x and y coordinates
+    let sumX = 0;
+    let sumY = 0;
+    let count = 0;
+
+    for (let i = 0; i < numbers.length; i += 2) {
+      if (i + 1 < numbers.length) {
+        sumX += numbers[i];
+        sumY += numbers[i + 1];
+        count++;
+      }
+    }
+
+    return {
+      x: sumX / count,
+      y: sumY / count,
+    };
+  };
+
+  const updateHintPosition = () => {
     if (incorrectAttempts >= 5 && mapContainerRef.current) {
       const targetElement = mapContainerRef.current.querySelector(
         `#${currentCountry}`
@@ -29,28 +58,35 @@ export function Game() {
         const rect = targetElement.getBoundingClientRect();
         const containerRect = mapContainerRef.current.getBoundingClientRect();
 
-        // Calculate center position of the country relative to the container
-        const x = rect.left + rect.width / 2 - containerRect.left;
-        const y = rect.top + rect.height / 2 - containerRect.top;
+        // Calculate the center of the country
+        const centerX = rect.left + rect.width / 2 - containerRect.left;
+        const centerY = rect.top + rect.height / 2 - containerRect.top;
 
-        setArrowPosition({ x, y });
+        // Use the larger dimension to ensure the circle encompasses the country
+        const diameter = Math.max(rect.width, rect.height) * 1.2; // 20% larger to give some padding
+
+        setHintPosition({
+          x: centerX - diameter / 2,
+          y: centerY - diameter / 2,
+          width: diameter,
+          height: diameter,
+        });
       }
     } else {
-      setArrowPosition(null);
+      setHintPosition(null);
     }
   };
 
   useEffect(() => {
-    updateArrowPosition();
-    // Add resize listener to update arrow position when window is resized
-    window.addEventListener("resize", updateArrowPosition);
-    return () => window.removeEventListener("resize", updateArrowPosition);
+    updateHintPosition();
+    // Add resize listener to update hint position when window is resized
+    window.addEventListener("resize", updateHintPosition);
+    return () => window.removeEventListener("resize", updateHintPosition);
   }, [incorrectAttempts, currentCountry]);
 
   useEffect(() => {
-    // Define viewBox values that make each continent fill its container
     const mapConfigs = {
-      europe: { viewBox: "0 50 675 675" },
+      europe: { viewBox: "50 220 500 500" },
       asia: { viewBox: "550 100 400 400" },
       africa: { viewBox: "370 300 300 300" },
       "north-america": { viewBox: "-50 -50 500 500" },
@@ -72,6 +108,7 @@ export function Game() {
         const paths = svgDoc.querySelectorAll("path");
         const countryData: { id: string; name: string }[] = [];
         const nameMapping: { [key: string]: string } = {};
+        const smallCountryPaths: SVGPathElement[] = [];
 
         paths.forEach((path) => {
           const id = path.getAttribute("id");
@@ -79,8 +116,46 @@ export function Game() {
           if (id && name) {
             countryData.push({ id, name });
             nameMapping[id] = name;
+
+            // Handle small countries
+            if (SMALL_COUNTRIES.includes(id)) {
+              const originalPath = path.getAttribute("d") || "";
+              const center = getPathCenter(originalPath);
+
+              if (center) {
+                // Create a circular path using SVG circle command
+                const circle = `
+                  M ${center.x},${center.y} 
+                  m -${SMALL_COUNTRY_RADIUS},0 
+                  a ${SMALL_COUNTRY_RADIUS},${SMALL_COUNTRY_RADIUS} 0 1,0 ${
+                  SMALL_COUNTRY_RADIUS * 2
+                },0 
+                  a ${SMALL_COUNTRY_RADIUS},${SMALL_COUNTRY_RADIUS} 0 1,0 -${
+                  SMALL_COUNTRY_RADIUS * 2
+                },0
+                `
+                  .trim()
+                  .replace(/\s+/g, " ");
+
+                path.setAttribute("d", circle);
+                // path.setAttribute("stroke-width", "2");
+
+                // Store small country paths to move them to the end later
+                smallCountryPaths.push(path);
+              }
+            }
           }
         });
+
+        // Move small countries to the end of their parent element to render them on top
+        const svgGroup = paths[0]?.parentElement;
+        if (svgGroup) {
+          smallCountryPaths.forEach((path) => {
+            // Remove and re-append to move to end
+            path.remove();
+            svgGroup.appendChild(path);
+          });
+        }
 
         setCountries(countryData.map((c) => c.id));
         setCountryNames(nameMapping);
@@ -128,8 +203,8 @@ export function Game() {
 
         setMapData(modifiedData);
 
-        // Update arrow position after map is loaded
-        setTimeout(updateArrowPosition, 100);
+        // Update hint position after map is loaded
+        setTimeout(updateHintPosition, 100);
       })
       .catch((error) => console.error("Error loading map:", error));
   }, [continent, correctGuesses, showHint]);
@@ -143,7 +218,7 @@ export function Game() {
       setIncorrectGuess(null);
       setIncorrectAttempts(0);
       setShowHint(false);
-      setArrowPosition(null);
+      setHintPosition(null);
 
       // Add the correct class to the clicked country
       target.classList.add("correct");
@@ -177,7 +252,7 @@ export function Game() {
         setShowHint(true);
       }
       if (newAttempts >= 5) {
-        updateArrowPosition();
+        updateHintPosition();
       }
 
       // Add temporary incorrect class
@@ -224,28 +299,16 @@ export function Game() {
             dangerouslySetInnerHTML={{ __html: mapData }}
             onClick={handleCountryClick}
           />
-          {arrowPosition && (
+          {hintPosition && (
             <div
-              className="absolute w-8 h-8 -mt-12 -ml-4 animate-bounce pointer-events-none"
+              className="absolute pointer-events-none animate-circle border-4 border-red-500 rounded-full"
               style={{
-                left: arrowPosition.x,
-                top: arrowPosition.y,
+                left: hintPosition.x,
+                top: hintPosition.y,
+                width: hintPosition.width,
+                height: hintPosition.height,
               }}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="w-full h-full"
-                stroke="#EF4444"
-                strokeWidth="2"
-                fill="none"
-              >
-                <path
-                  d="M12 2L12 22M12 22L2 12M12 22L22 12"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
+            />
           )}
         </div>
       </div>
