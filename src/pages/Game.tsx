@@ -22,8 +22,18 @@ export function Game() {
   } | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
-  const SMALL_COUNTRIES = ["VA", "SM", "AD", "LI", "MC", "MT"]; // Vatican City, San Marino, Andorra
-  const SMALL_COUNTRY_RADIUS = 5; // Increased radius for better visibility
+  const SMALL_COUNTRIES = [
+    "VA",
+    "SM",
+    "AD",
+    "LI",
+    "MC",
+    "MT",
+    "BN",
+    "HK",
+    "SG",
+  ];
+  const SMALL_COUNTRY_RADIUS = 4;
 
   const getPathCenter = (pathData: string) => {
     // Get all numbers from the path data
@@ -88,7 +98,7 @@ export function Game() {
     const mapConfigs = {
       europe: { viewBox: "50 220 500 500" },
       asia: { viewBox: "550 100 400 400" },
-      africa: { viewBox: "370 300 300 300" },
+      africa: { viewBox: "400 330 250 250" },
       "north-america": { viewBox: "-50 -50 500 500" },
       "south-america": { viewBox: "150 400 300 300" },
       oceania: { viewBox: "600 250 500 500" },
