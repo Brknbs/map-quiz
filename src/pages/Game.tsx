@@ -101,7 +101,7 @@ export function Game() {
       africa: { viewBox: "400 330 250 250" },
       "north-america": { viewBox: "-50 -50 500 500" },
       "south-america": { viewBox: "150 400 300 300" },
-      oceania: { viewBox: "600 250 500 500" },
+      oceania: { viewBox: "700 370 300 300" },
     };
 
     fetch(`/maps/${continent}.svg`)
