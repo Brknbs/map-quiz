@@ -8,13 +8,21 @@ export function Home() {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen px-4 text-center bg-map-pattern">
       <SpinningEarth />
-      <h1 className="text-6xl font-bold text-dark-brown mb-8 font-lexend">
-        Test Your Geography Now!
-      </h1>
-      <h2 className="text-3xl font-bold text-dark-brown mb-8 font-lexend">
-        Can you find all the countries on the map? If you think so, challenge
-        yourself!
-      </h2>
+      <div className="relative">
+        <h1 className="text-6xl font-bold text-dark-brown mb-8 font-lexend">
+          Test Your Geography Now!
+        </h1>
+      </div>
+      <div className="relative">
+        <h2 className="text-3xl font-bold text-dark-brown mb-8 font-lexend">
+          <span className="relative inline-block">
+            <span className="z-10 relative">
+              Can you find all the countries on the map?
+            </span>
+            <span className="absolute inset-x-0 bottom-1 h-8 bg-yellow-100/60 -rotate-1 animate-marker origin-left" />
+          </span>
+        </h2>
+      </div>
 
       <Button
         size="lg"

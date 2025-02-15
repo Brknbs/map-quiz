@@ -71,6 +71,7 @@ export default {
         "spin-slow": "spin 10s linear infinite",
         hint: "hint 1.5s ease-in-out infinite",
         circle: "circle 2s ease-in-out infinite",
+        marker: "marker 0.8s cubic-bezier(0.65, 0, 0.35, 1) forwards",
       },
       keyframes: {
         hint: {
@@ -81,6 +82,16 @@ export default {
           "0%": { transform: "scale(1)", opacity: "0.8" },
           "50%": { transform: "scale(1.3)", opacity: "0.4" },
           "100%": { transform: "scale(1)", opacity: "0.8" },
+        },
+        marker: {
+          "0%": {
+            transform: "scaleX(0)",
+            opacity: "0",
+          },
+          "100%": {
+            transform: "scaleX(1)",
+            opacity: "1",
+          },
         },
       },
       backgroundImage: {
