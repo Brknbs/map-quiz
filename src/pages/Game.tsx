@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
+import { CompletionDialog } from "@/components/CompletionDialog";
 
 export function Game() {
   const { continent } = useParams();
@@ -10,10 +11,12 @@ export function Game() {
   const [countryNames, setCountryNames] = useState<{ [key: string]: string }>(
     {}
   );
-  const [score, setScore] = useState(0);
   const [incorrectGuess, setIncorrectGuess] = useState<string | null>(null);
   const [incorrectAttempts, setIncorrectAttempts] = useState(0);
   const [showHint, setShowHint] = useState(false);
+  const [time, setTime] = useState(0);
+  const [isGameStarted, setIsGameStarted] = useState(false);
+  const [showCompletionDialog, setShowCompletionDialog] = useState(false);
   const [hintPosition, setHintPosition] = useState<{
     x: number;
     y: number;
@@ -21,6 +24,7 @@ export function Game() {
     height: number;
   } | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<number>();
 
   const SMALL_COUNTRIES = [
     "VA",
@@ -93,6 +97,36 @@ export function Game() {
     window.addEventListener("resize", updateHintPosition);
     return () => window.removeEventListener("resize", updateHintPosition);
   }, [incorrectAttempts, currentCountry]);
+
+  useEffect(() => {
+    if (isGameStarted && !showCompletionDialog) {
+      timerRef.current = window.setInterval(() => {
+        setTime((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [isGameStarted, showCompletionDialog]);
+
+  const resetGame = () => {
+    setCorrectGuesses(new Set());
+    setIncorrectGuess(null);
+    setIncorrectAttempts(0);
+    setShowHint(false);
+    setHintPosition(null);
+    setTime(0);
+    setShowCompletionDialog(false);
+    setIsGameStarted(false);
+
+    // Select a new random country
+    if (countries.length > 0) {
+      const randomIndex = Math.floor(Math.random() * countries.length);
+      setCurrentCountry(countries[randomIndex]);
+    }
+  };
 
   useEffect(() => {
     const mapConfigs = {
@@ -220,6 +254,10 @@ export function Game() {
   }, [continent, correctGuesses, showHint]);
 
   const handleCountryClick = (event: React.MouseEvent) => {
+    if (!isGameStarted) {
+      setIsGameStarted(true);
+    }
+
     const target = event.target as SVGElement;
     const countryId = target.id;
 
@@ -234,17 +272,20 @@ export function Game() {
       target.classList.add("correct");
 
       // Correct guess
-      setCorrectGuesses((prev) => new Set([...prev, countryId]));
+      const newCorrectGuesses = new Set([...correctGuesses, countryId]);
+      setCorrectGuesses(newCorrectGuesses);
 
-      // Increment score
-      setScore((prev) => prev + 100);
-
-      // Select a new random country from remaining ones
-      const remainingCountries = countries.filter(
-        (country) => !correctGuesses.has(country) && country !== countryId
-      );
-
-      if (remainingCountries.length > 0) {
+      // Check if all countries are found
+      if (newCorrectGuesses.size === countries.length) {
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+        }
+        setShowCompletionDialog(true);
+      } else {
+        // Select a new random country from remaining ones
+        const remainingCountries = countries.filter(
+          (country) => !newCorrectGuesses.has(country)
+        );
         const randomIndex = Math.floor(
           Math.random() * remainingCountries.length
         );
@@ -253,7 +294,6 @@ export function Game() {
     } else if (countryId) {
       // Incorrect guess
       setIncorrectGuess(countryNames[countryId]);
-      setScore((prev) => Math.max(0, prev - 25));
 
       // Increment incorrect attempts and show hint if needed
       const newAttempts = incorrectAttempts + 1;
@@ -273,13 +313,20 @@ export function Game() {
     }
   };
 
+  // Format time as MM:SS
+  const minutes = Math.floor(time / 60);
+  const seconds = time % 60;
+  const formattedTime = `${minutes.toString().padStart(2, "0")}:${seconds
+    .toString()
+    .padStart(2, "0")}`;
+
   return (
     <div className="min-h-screen bg-map-pattern px-6 py-20">
       <div className="container mx-auto mt-16">
         <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm px-6 py-3 rounded-lg shadow-lg z-10">
           <div className="flex items-center gap-6">
             <div className="text-brown font-semibold whitespace-nowrap">
-              Score: <span className="text-dark-brown">{score}</span>
+              Time: <span className="text-dark-brown">{formattedTime}</span>
             </div>
             <div className="text-xl font-semibold text-brown whitespace-nowrap">
               Find:{" "}
@@ -322,6 +369,11 @@ export function Game() {
           )}
         </div>
       </div>
+      <CompletionDialog
+        isOpen={showCompletionDialog}
+        time={time}
+        onPlayAgain={resetGame}
+      />
     </div>
   );
 }
